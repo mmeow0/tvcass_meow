@@ -10,7 +10,7 @@ class VideoPlayer:
         self.cap = cv2.VideoCapture(video_file)
         self.master = master
         self.canvas = tk.Canvas(master, width=self.WIDTH, height=self.HEIGHT, background='grey')
-        self.canvas.grid(row=1,pady=(0, 20))
+        self.canvas.grid(row=6,pady=(0, 20))
         self.delay = int(1000/self.cap.get(cv2.CAP_PROP_FPS))
 
     def update(self):

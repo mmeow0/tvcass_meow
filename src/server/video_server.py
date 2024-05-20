@@ -5,6 +5,8 @@ import threading
 import queue
 import os
 import zmq
+from Crypto.Cipher import AES
+from Crypto.Util.Padding import pad
 
 class VideoServer:
     WIDTH = 500
@@ -12,14 +14,21 @@ class VideoServer:
     q = queue.Queue(maxsize=10)
     host_ip = '0.0.0.0'
 
-    def __init__(self, filename, port):
+    def __init__(self, filename, port, cypher_key = ''):
+        self.cypher_key = cypher_key
         context = zmq.Context()
         self.socket = context.socket(zmq.PUB)
         self.socket.bind("tcp://{}:{}".format(self.host_ip, port))
         self.vid = cv2.VideoCapture(filename)
         self.FPS = self.vid.get(cv2.CAP_PROP_FPS)
         self.t1 = threading.Thread(target=self.video_stream_gen, args=())
-                
+       
+    def do_encrypt(self, message):
+        obj = AES.new(self.cypher_key.encode("utf8"), AES.MODE_CBC, 'This is an IV456'.encode("utf8"))
+        plaintext_padded = pad(message, AES.block_size)
+        ciphertext = obj.encrypt(plaintext_padded)
+        return ciphertext
+         
     def video_stream_gen(self):
         while(self.vid.isOpened()):
             try:
@@ -39,6 +48,8 @@ class VideoServer:
                     frame = self.q.get()
                     _,buffer = cv2.imencode('.jpeg',frame,[cv2.IMWRITE_JPEG_QUALITY,80])
                     message = base64.b64encode(buffer)
+                    if len(self.cypher_key) != 0:
+                        message = self.do_encrypt(message)
                     self.socket.send(message)
                     frame = cv2.putText(frame,'FPS: '+str(round(fps,1)),(10,40),cv2.FONT_HERSHEY_SIMPLEX,0.7,(0,0,255),2)
                     if cnt == frames_to_count:
