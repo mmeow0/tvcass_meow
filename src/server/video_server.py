@@ -8,6 +8,8 @@ import zmq
 from Crypto.Cipher import AES
 from Crypto.Util.Padding import pad
 
+from cipher import AESCipher
+
 class VideoServer:
     WIDTH = 500
     TMP_AUDIO =  'temp.wav'
@@ -49,7 +51,7 @@ class VideoServer:
                     _,buffer = cv2.imencode('.jpeg',frame,[cv2.IMWRITE_JPEG_QUALITY,80])
                     message = base64.b64encode(buffer)
                     if len(self.cypher_key) != 0:
-                        message = self.do_encrypt(message)
+                        message = AESCipher(b'8bda7c9b0e97affe14a7691de7e3a977').encrypt(message.decode("utf-8"))
                     self.socket.send(message)
                     frame = cv2.putText(frame,'FPS: '+str(round(fps,1)),(10,40),cv2.FONT_HERSHEY_SIMPLEX,0.7,(0,0,255),2)
                     if cnt == frames_to_count:

@@ -29,12 +29,16 @@ class App:
         self.label_2 = tk.Label(self.frame, text="Введите порт").grid(row=2, pady=(0,5))
         self.entry_2 = tk.Entry(self.frame, validate="key", validatecommand=check)
         self.entry_2.grid(row=3, pady=(0,10))
+        
+        self.label_3 = tk.Label(self.frame, text="Введите ключ").grid(row=4, pady=(0,5))
+        self.entry_3 = tk.Text(self.frame, height=8, width=40)
+        self.entry_3.grid(row=5, pady=(0,10))
 
-        self.error_label = tk.Label(self.frame, textvariable=self.errmsg, foreground="red").grid(row=4, pady=(0,10))
+        self.error_label = tk.Label(self.frame, textvariable=self.errmsg, foreground="red").grid(row=6, pady=(0,10))
 
         self.player = VideoPlayer(master=self.root)
         self.but = tk.Button(self.frame, text="Подключиться", command=self.btn_click, state=tk.DISABLED)
-        self.but.grid(row=5, pady=(0,10))
+        self.but.grid(row=7, pady=(0,10))
 
         self.root.mainloop()
         
@@ -44,11 +48,16 @@ class App:
     def check_if_done(self, t):
         if t.is_alive():
             self.schedule_check(t)
+      
+    def async_f(self):
+        inputValue=self.entry_3.get("1.0","end-1c")
+        print(inputValue)
+        self.player.run(self.entry.get(), self.entry_2.get(), inputValue)
                 
     def btn_click(self):   
         self.but['state'] = tk.DISABLED
         
-        t = threading.Thread(target=self.player.run)
+        t = threading.Thread(target=self.async_f)
         t.start()
         self.schedule_check(t)
             
